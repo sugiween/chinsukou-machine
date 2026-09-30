@@ -21,7 +21,7 @@
   --sun:#ffc51f; --sun-deep:#f7ad00; --ink:#241a12; --paper:#fff6dc;
   --box:#3c404d; --box-hi:#50566a; --box-lo:#282b35; --box-shine:#8a90a6;
   --drum:#efe1c0; --glyph:#33261c;
-  --hot:#f0321e; --sea:#0a97a3; --gold:#ffdf6b;
+  --hot:#f0321e; --sea:#0a97a3; --gold:#ffdf6b; --link:#0b4fa8;
   --display:"Dela Gothic One","Hiragino Kaku Gothic StdN","Yu Gothic","Meiryo",sans-serif;
   --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
   color-scheme:light;
@@ -42,7 +42,8 @@ body{margin:0;background:var(--sun);color:var(--ink);font:500 16px/1.75 var(--bo
 .col>*{position:relative;z-index:1;min-width:0}
 
 .eyebrow{margin:0 0 2px;font-weight:900;font-size:11px;letter-spacing:.03em}
-.eyebrow a{color:var(--ink);text-decoration-thickness:2px;text-underline-offset:2px}
+.eyebrow a{color:var(--link);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:2px}
+a[target="_blank"]::after{content:"↗";display:inline-block;margin-left:.15em;font:900 .9em/1 "Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2",system-ui,sans-serif;text-decoration:none}
 h1{margin:0;font:400 clamp(24px,7.4vw,40px)/1.2 var(--display)}
 .nb{display:inline-block}
 h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.02em .2em .08em;margin:.06em .04em;
@@ -129,10 +130,10 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
 .credit p{margin:0 0 12px;max-width:36em}
 .credit dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
 .credit dt{font-weight:900} .credit dd{margin:0;min-width:0;overflow-wrap:anywhere}
-.credit a{color:var(--ink);font-weight:900;text-decoration-thickness:2px;text-underline-offset:3px}
-blockquote{margin:0 0 14px;padding:4px 0 4px 16px;border-left:6px solid var(--hot)}
-blockquote p{margin:0 0 4px;font-weight:900;font-size:18px}
-blockquote cite{font-style:normal;font-size:13px;font-weight:700}
+.credit a{color:var(--link);font-weight:900;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+/* X の埋め込み。スクリプトが読めない環境では下のリンクだけが残る */
+.x-embed{margin:0 0 14px;max-width:550px}
+.x-embed .twitter-tweet{margin:0}
 .fine{font-size:13px;line-height:1.7}
 
 /* スマホ幅: 判定の枠をボタンの直下に上げて小さくし、説明文はその下へ */
@@ -251,12 +252,12 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
       <dt>記事</dt><dd><a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener">ちんすこうの文字の綴りの危うさを可視化するマシーンを作る</a></dd>
       <dt>著者</dt><dd>やんばるたろう さん</dd>
       <dt>掲載</dt><dd>DEEokinawa（でぃーおきなわ）特集 2026.09.30</dd>
-      <dt>X</dt><dd><a href="https://x.com/dee_okinawa/status/2105158969350090949" target="_blank" rel="noopener">DEEokinawa の X 投稿を見る</a></dd>
     </dl>
-    <blockquote>
-      <p>想像よりもよいものができて打ち震えています。</p>
-      <cite>やんばるたろう さん（上記の DEEokinawa 記事より引用）</cite>
-    </blockquote>
+    <div class="x-embed" id="xEmbed">
+      <blockquote class="twitter-tweet" data-lang="ja" data-dnt="true">
+        <a href="https://twitter.com/dee_okinawa/status/2105158969350090949" target="_blank" rel="noopener">DEEokinawa の X 投稿を見る</a>
+      </blockquote>
+    </div>
     <p>実物が動く様子は、元記事の動画でぜひ見てください。本物のほうがずっといい音がします。</p>
     <p>元記事によると、ちんすこうは漢字で「金楚糕」。金は黄金色、楚はほろりとほどける口当たり、糕は焼き菓子を表すそうです。</p>
     <p class="fine">判定スタンプ、危うさメーター、記録、効果音はこのブラウザ版で足したもので、実物のマシーンにはありません。出目は 5 つのリールそれぞれ 1/5 の乱数で、演出による操作はしていません。DEEokinawa 編集部が制作・監修したページではありません。</p>
@@ -589,5 +590,6 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   pullBtn.addEventListener('click', pull);
 })();
 </script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
