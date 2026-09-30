@@ -237,8 +237,8 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
     <p class="verdict" id="verdict">待機中</p>
     <p class="detail" id="detail">いまは正しい綴りの「ちんすこう」。レバーを倒すと 5 つのリールがばらばらに回ります。</p>
     <p class="repair" id="repair" hidden>
-      <a id="fixLink" href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener" data-count="article-clicks">元記事を読んで修理する</a>
-      <button id="later" type="button">また今度見に行く</button>
+      <a id="fixLink" href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener" data-count="article-clicks">丈夫な本物を作りたいので記事を読む</a>
+      <button id="later" type="button">直してつづける</button>
     </p>
     <div class="meter" id="meter" role="img" aria-label="危うさ 0%"><div class="needle" id="needle"></div></div>
     <p class="cap"><span>安全</span><span id="meterVal">危うさ 0%（当社比）</span><span>危うい</span></p>
@@ -547,7 +547,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
 
   // ---- レバーの寿命 ----
   // 元記事のリンクを一度も押していないブラウザでは、BREAK_AT 回ごとにレバーが折れる。
-  // 折れても「また今度」で予備レバーが付いて遊べる。リンクを押せば直り、二度と折れない。
+  // 折れても「直してつづける」で遊べる (また BREAK_AT 回で折れる)。元記事のリンクを押せば、二度と折れない。
   // 保存できない環境 (一部のアプリ内ブラウザ) では、直せなくなるのを避けるため最初から折らない
   const BREAK_AT = 20;
   let visit = { visited: false, wear: 0 }, gimmick = false, broken = false;
@@ -569,11 +569,11 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
     stamp.hidden = true;
     sfx.lever();
     tween(160, t => setLever(55 * t)).then(() => {
-      // 先に「直す / また今度」を出す。飾りの動きや音が失敗しても、操作できない状態で止まらないようにする
+      // 先に 2 つのボタンを出す。飾りの動きや音が失敗しても、操作できない状態で止まらないようにする
       machine.classList.add('broken');
       setLever(0);
       say('レバーが折れました');
-      showVerdict('danger', '故障', 'レバーが折れました。直し方は元記事に書いてあります。');
+      showVerdict('danger', '故障', 'レバーが折れました。');
       $('repair').hidden = false;
       try {
         sfx.snap();
@@ -593,16 +593,16 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
     if (!broken) return;
     visit.wear = 0; saveVisit();
     machine.classList.add('spare');
-    unbreak('予備のレバーを付けました');
-    showVerdict('safe', '応急処置', `予備のレバーです。また ${BREAK_AT} 回で折れます。直し方は元記事に。`);
+    unbreak('直しました');
+    showVerdict('safe', '応急処置', 'レバーを直しました。');
   });
   function markVisited() {
     const wasOff = broken || machine.classList.contains('spare');
     visit.visited = true; saveVisit();
     if (!wasOff) return;
     machine.classList.remove('spare');
-    unbreak('修理完了！');
-    showVerdict('safe', '修理完了', '元記事を見に行ってくれてありがとう。もう折れません。');
+    unbreak('丈夫になりました！');
+    showVerdict('safe', '丈夫になりました', '元記事を見に行ってくれてありがとう。もう折れません。');
   }
   function say(text) { telop.textContent = text; }
   async function pull() {
