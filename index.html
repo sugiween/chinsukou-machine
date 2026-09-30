@@ -42,10 +42,11 @@ body{margin:0;background:var(--sun);color:var(--ink);font:500 16px/1.75 var(--bo
 .col>*{position:relative;z-index:1;min-width:0}
 
 .eyebrow{margin:0 0 2px;font-weight:900;font-size:11px;letter-spacing:.03em}
-h1{margin:0;font:400 clamp(17px,4.7vw,32px)/1.16 var(--display);text-wrap:balance}
+h1{margin:0;font:400 clamp(24px,7.4vw,40px)/1.2 var(--display)}
+.nb{display:inline-block}
 h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.02em .2em .08em;margin:.06em .04em;
   transform:rotate(-2.5deg);box-shadow:.07em .07em 0 var(--ink)}
-.lede{margin:4px 0 0;font-weight:700;font-size:14px;line-height:1.6;max-width:40em}
+.lede{margin:4px 0 0;font-weight:700;font-size:12px;line-height:1.5;max-width:44em}
 
 .col>.stage{z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px}
 .telop{position:absolute;left:0;top:0;width:18.44em;height:2.78em;margin:0;padding-bottom:.45em;display:grid;place-items:end center;text-align:center;
@@ -137,9 +138,9 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
 @media (max-width:959px){
   .wrap{gap:10px}
   .col-info{gap:8px}
-  .lede{font-size:12px;line-height:1.5;margin-top:2px}
-  .machine{--pivot:2.2em;--arm:1.8em}
-  .box{padding-block:.7em}
+  .lede{font-size:11px;margin-top:2px}
+  .machine{--pivot:2.1em;--arm:1.75em}
+  .box{padding-block:.6em}
   .col>.stage{gap:8px}
   .pull{font-size:18px;padding:.55em 1.1em .6em;box-shadow:0 4px 0 var(--ink)}
   .sound{font-size:12px;padding:.45em .8em}
@@ -150,7 +151,11 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   .meter{height:14px}
   .needle{top:-6px;bottom:-6px}
   .cap{margin-top:6px;font-size:11px}
-  .sec-h{font-size:13px;margin:0 0 2px}
+  .sec-h{font-size:12px;margin:0}
+  .stats-h{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .log-sec{display:flex;align-items:center;gap:8px}
+  .log-sec .sec-h{flex:none}
+  .log-sec .log,.log-sec .empty{flex:1;min-width:0}
   .stats{margin:0}
   .stats div{padding:3px 10px 5px}
   .stats dt{font-size:11px}
@@ -165,7 +170,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
 @media (min-width:960px){
   .wrap{max-width:1180px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:start}
   .machine{font-size:clamp(30px,min(5.6vw,9.5vh),72px)}
-  h1{font-size:clamp(22px,2.4vw,32px)}
+  h1{font-size:clamp(30px,3.4vw,46px)}
 }
 
 /* マシーンの追従は、1 画面に収まる高さがあるときだけ */
@@ -191,7 +196,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   <div class="col col-play">
   <header>
     <p class="eyebrow">非公式ブラウザ版 ／ 元ネタは DEEokinawa の工作記事</p>
-    <h1>ちんすこう<span class="tag">綴りの危うさ</span>可視化マシーン</h1>
+    <h1><span class="nb">ちんすこう<span class="tag">綴りの危うさ</span></span><span class="nb">可視化マシーン</span></h1>
     <p class="lede">「ち」「ん」「す」「こ」「う」。この 5 文字、並びしだいでかなり危うい。レバーを倒して、その目で確かめよう。</p>
   </header>
 
@@ -224,7 +229,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   </section>
 
   <section>
-    <h2 class="sec-h">これまでの記録</h2>
+    <h2 class="sec-h stats-h">これまでの記録</h2>
     <dl class="stats">
       <div><dt>回した回数</dt><dd id="stSpins">0</dd></div>
       <div><dt>危うい綴り</dt><dd id="stDanger">0</dd></div>
@@ -232,7 +237,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
     </dl>
   </section>
 
-  <section>
+  <section class="log-sec">
     <h2 class="sec-h">最近の出目</h2>
     <p class="empty" id="logEmpty">まだ回していません。</p>
     <ol class="log" id="log"></ol>
@@ -254,7 +259,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
     </blockquote>
     <p>実物が動く様子は、元記事の動画でぜひ見てください。本物のほうがずっといい音がします。</p>
     <p>元記事によると、ちんすこうは漢字で「金楚糕」。金は黄金色、楚はほろりとほどける口当たり、糕は焼き菓子を表すそうです。</p>
-    <p class="fine">リールが 1 つずつ止まる演出、判定スタンプ、危うさメーター、効果音はこのブラウザ版で足したもので、実物のマシーンにはありません。出目は 5 つのリールそれぞれ 1/5 の乱数で、演出による操作はしていません。DEEokinawa 編集部が制作・監修したページではありません。</p>
+    <p class="fine">判定スタンプ、危うさメーター、記録、効果音はこのブラウザ版で足したもので、実物のマシーンにはありません。出目は 5 つのリールそれぞれ 1/5 の乱数で、演出による操作はしていません。DEEokinawa 編集部が制作・監修したページではありません。</p>
     <p class="fine">ブラウザ版の制作: sugiween ／ ソースコード: <a href="https://github.com/sugiween/chinsukou-machine" target="_blank" rel="noopener">GitHub</a>（コード部分は MIT ライセンス）</p>
   </section>
   </div>
@@ -317,7 +322,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
     if (r.blur !== lvl) { r.blur = lvl; r.el.style.filter = lvl ? `url(#mb${lvl})` : ''; }
   }
   function planStop(r, ci) {
-    const p0 = r.p, v0 = Math.max(r.v, 12), pT = nextTarget(p0, 3, ci);
+    const p0 = r.p, v0 = Math.max(r.v, 12), pT = nextTarget(p0, 2, ci);
     const D = 2 * (pT - p0) / v0, B = 0.16;
     return { D, T: D + B, end: pT, at(t) {
       if (t < D) return p0 + v0 * t - v0 * t * t / (2 * D);
@@ -349,8 +354,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
         r.v = Math.abs(r.p - prev) / dt;
       }
       if (Math.round(r.p) !== Math.round(prev)) {
-        const slow = r.v < 6;
-        if (slow || now - lastTick > 55) { lastTick = now; sfx.tick(slow); }
+        if (now - lastTick > 30) { lastTick = now; sfx.tick(); }
       }
       setBlur(r, r.v); render(r);
     }
@@ -382,26 +386,33 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
     v.gain.setValueAtTime(g, t); v.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(v); v.connect(a.destination); o.start(t); o.stop(t + d + 0.03);
   }
-  function noise(d, g) {
+  // 短い帯域ノイズ 1 発 = プラスチックの歯車が 1 コマ送られる音
+  let noiseBuf = null;
+  function clack(g, f, d) {
     const a = ac(); if (!a) return;
-    const n = Math.floor(a.sampleRate * d), buf = a.createBuffer(1, n, a.sampleRate), ch = buf.getChannelData(0);
-    for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / n);
-    const s = a.createBufferSource(), v = a.createGain(); s.buffer = buf; v.gain.value = g;
-    s.connect(v); v.connect(a.destination); s.start();
+    if (!noiseBuf) {
+      const n = Math.floor(a.sampleRate * 0.1); noiseBuf = a.createBuffer(1, n, a.sampleRate);
+      const ch = noiseBuf.getChannelData(0); for (let i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
+    }
+    const t = a.currentTime, src = a.createBufferSource(), bp = a.createBiquadFilter(), v = a.createGain();
+    src.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.4;
+    v.gain.setValueAtTime(g, t); v.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    src.connect(bp); bp.connect(v); v.connect(a.destination); src.start(t); src.stop(t + d + 0.01);
   }
   const sfx = {
-    lever() { noise(0.12, 0.28); tone(150, 60, 'triangle', 0.2, 0.35); },
-    tick(slow) { tone(slow ? 880 : 1500, null, 'square', 0.025, slow ? 0.09 : 0.03); },
-    stop() { tone(260, 110, 'triangle', 0.09, 0.32); noise(0.04, 0.14); },
-    danger() { for (let i = 0; i < 6; i++) tone(i % 2 ? 660 : 880, null, 'sawtooth', 0.16, 0.15, i * 0.16); },
-    safe() { tone(520, 260, 'sine', 0.3, 0.22); },
+    lever() { clack(0.5, 900, 0.07); tone(150, 70, 'triangle', 0.12, 0.3); },
+    leverBack() { clack(0.35, 1200, 0.05); },
+    tick() { clack(0.22, 2400 + Math.random() * 1800, 0.018); },
+    stop() { clack(0.5, 1500, 0.035); tone(320, 160, 'triangle', 0.05, 0.2); },
+    danger() { tone(740, null, 'square', 0.09, 0.12); tone(520, null, 'square', 0.14, 0.12, 0.1); },
+    safe() { tone(620, 420, 'sine', 0.12, 0.18); },
     jack() { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, null, 'square', 0.24, 0.13, i * 0.11)); },
   };
   function paintSound() { soundBtn.textContent = soundOn ? '音 ON' : '音 OFF'; soundBtn.setAttribute('aria-pressed', String(soundOn)); }
   soundBtn.addEventListener('click', () => {
     soundOn = !soundOn; paintSound();
     try { localStorage.setItem('chinsukou-sound', soundOn ? 'on' : 'off'); } catch (e) {}
-    if (soundOn) sfx.tick(true);
+    if (soundOn) sfx.tick();
   });
   paintSound();
 
@@ -532,26 +543,22 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
     reels.forEach(r => r.win.classList.remove('hit', 'jack'));
     const result = reels.map(() => Math.floor(Math.random() * N));
 
-    // レバーを手前に倒す → 倒している間に全リールが回る → レバーが戻る (実物と同じ順)
+    // 実物と同じ順: レバーを手前に倒す → 倒している間に全リールが回る → レバーが戻るのに合わせてほぼ一斉に止まる
     say('シャッフル中…');
     sfx.lever();
     machine.classList.add('jolt');
     reels.forEach(r => { r.mode = 'spin'; });
     startLoop();
-    await tween(240, t => setLever(LEVER_MAX * t * t));
-    await sleep(520);
+    await tween(200, t => setLever(LEVER_MAX * t * t));
+    await sleep(350);
     machine.classList.remove('jolt');
-    await tween(320, t => setLever(LEVER_MAX * (1 - backOut(t))));
+    sfx.leverBack();
+    await Promise.all([
+      tween(260, t => setLever(LEVER_MAX * (1 - backOut(t)))),
+      ...reels.map((_, i) => sleep(i * 70).then(() => stopReel(i, result[i]))),
+    ]);
     setLever(0);
-    say('どうなる…？');
-
-    // 左から 1 つずつ止める
-    const st = [];
-    for (let i = 0; i < N; i++) {
-      await sleep(200 + i * 60);
-      await stopReel(i, result[i]);
-      st.push(SEQ[result[i]]);
-    }
+    const st = result.map(c => SEQ[c]);
 
     // 判定
     const word = st.join(''), v = judge(word);
@@ -561,9 +568,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
       { duration: 260, easing: 'cubic-bezier(.2,1.4,.4,1)' });
     if (v.kind === 'danger') {
       sfx.danger();
-      if (!calm) machine.animate([{ transform: 'none' }, { transform: 'translate(-.08em,.03em) rotate(-1.6deg)' }, { transform: 'translate(.08em,-.03em) rotate(1.6deg)' },
-        { transform: 'translate(-.06em,0) rotate(-1deg)' }, { transform: 'translate(.05em,.02em) rotate(.8deg)' }, { transform: 'none' }], { duration: 520 });
-      burst([css('--hot'), css('--ink'), css('--paper')], 70);
+      if (!calm) machine.animate([{ transform: 'none' }, { transform: 'translate(-.06em,.02em) rotate(-1.2deg)' }, { transform: 'translate(.06em,-.02em) rotate(1.2deg)' }, { transform: 'none' }], { duration: 260 });
     } else if (v.kind === 'jack') {
       sfx.jack();
       burst([css('--gold'), css('--paper'), css('--hot'), css('--sea')], 160);
