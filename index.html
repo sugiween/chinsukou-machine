@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="レバーを倒すと「ち・ん・す・こ・う」の5文字がシャッフルされるマシーンのブラウザ版。元ネタは DEEokinawa の工作記事（非公式ファン作品）。">
+<title>ちんすこうシャッフルマシーン</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<style>
+/* layout: 1 カラム。上にテロップ、中央にマシーン (箱 + 右のレバー)、下に判定・記録・クレジット。
+   リーチ中だけ画面全体を暗転させ、マシーンだけを浮かせる */
+:root{
+  --sun:#ffc51f; --sun-deep:#f7ad00; --ink:#241a12; --paper:#fff6dc;
+  --box:#3c404d; --box-hi:#50566a; --box-lo:#282b35; --box-shine:#8a90a6;
+  --drum:#efe1c0; --glyph:#33261c;
+  --hot:#f0321e; --sea:#0a97a3; --gold:#ffdf6b; --night:#160503;
+  --display:"Dela Gothic One","Hiragino Kaku Gothic StdN","Yu Gothic","Meiryo",sans-serif;
+  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--sun);color:var(--ink);font:500 16px/1.75 var(--body);overflow-x:hidden}
+
+.sky{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.rays{position:absolute;left:50%;top:42%;width:240vmax;height:240vmax;margin:-120vmax 0 0 -120vmax;
+  background:repeating-conic-gradient(var(--sun) 0 9deg,var(--sun-deep) 9deg 18deg);animation:turn 120s linear infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+.dim{position:fixed;inset:0;z-index:2;background:var(--night);opacity:0;transition:opacity .35s;pointer-events:none}
+.glow{position:absolute;inset:0;box-shadow:inset 0 0 24vmax var(--hot);opacity:.35}
+body.reach .dim{opacity:.9}
+.flash{position:fixed;inset:0;z-index:4;background:var(--paper);opacity:0;pointer-events:none}
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+
+.wrap{max-width:680px;margin-inline:auto;padding-inline:16px;padding-block:28px 56px;display:flex;flex-direction:column;gap:30px}
+.wrap>*{position:relative;z-index:1;min-width:0}
+
+.eyebrow{margin:0 0 10px;font-weight:900;font-size:13px;letter-spacing:.08em}
+h1{margin:0;font:400 clamp(34px,9.6vw,66px)/1.12 var(--display);text-wrap:balance}
+h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.02em .2em .08em;margin:.06em .04em;
+  transform:rotate(-2.5deg);box-shadow:.07em .07em 0 var(--ink)}
+.lede{margin:16px 0 0;font-weight:700;max-width:34em}
+
+.wrap>.stage{z-index:3;display:flex;flex-direction:column;align-items:center;gap:18px}
+.telop{margin:0;min-height:2.5em;display:grid;place-items:center;text-align:center;
+  font:400 clamp(20px,5.6vw,34px)/1.25 var(--display);text-wrap:balance;transition:color .3s}
+body.reach .telop{color:var(--paper)}
+body.reach .telop.gold{color:var(--gold)}
+
+/* マシーン: 1em = 窓 1 つ分 */
+.machine{--pivot:2.5em;font-size:clamp(30px,11.2vw,84px);position:relative;padding:1em .95em 0 0;
+  transition:transform .14s ease-out;line-height:1}
+.machine.jolt{transform:rotate(1.1deg) translateY(.04em)}
+body.reach .machine{transform:scale(1.06);transition-duration:.4s}
+.box{position:relative;padding:1.25em .42em;border-radius:.09em;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.055) 0 1px,rgba(255,255,255,0) 1px 3px),
+    radial-gradient(rgba(255,255,255,.08) 1px,rgba(255,255,255,0) 1.5px) 0 0/7px 7px,
+    linear-gradient(160deg,var(--box-hi),var(--box) 45%,var(--box-lo));
+  box-shadow:inset 0 .03em 0 var(--box-shine),inset 0 -.05em 0 var(--box-lo),.1em .14em 0 var(--ink)}
+.windows{display:flex;gap:.2em}
+.win{position:relative;width:1em;height:1em;overflow:hidden;border-radius:.04em;background:var(--drum);
+  box-shadow:0 0 0 .035em var(--box-lo)}
+.win::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(30,18,8,.72),rgba(30,18,8,0) 30%,rgba(30,18,8,0) 70%,rgba(30,18,8,.72));
+  box-shadow:inset 0 0 .1em rgba(0,0,0,.6)}
+.win.target{animation:target .5s ease-in-out infinite alternate}
+@keyframes target{from{box-shadow:0 0 0 .05em var(--gold),0 0 .2em var(--gold)}to{box-shadow:0 0 0 .07em var(--hot),0 0 .6em var(--hot)}}
+.win.hit{box-shadow:0 0 0 .07em var(--hot),0 0 .55em var(--hot)}
+.win.jack{box-shadow:0 0 0 .07em var(--gold),0 0 .6em var(--gold)}
+.strip{will-change:transform}
+.cell{height:1em;display:grid;place-items:center}
+.cell span{font:400 .66em/1 var(--display);color:var(--glyph)}
+
+.lever{position:absolute;right:0;top:0;width:.95em;height:100%;padding:0;border:0;background:none;
+  font-size:inherit;cursor:pointer;--c:1;--s:0;-webkit-tap-highlight-color:transparent}
+.lever:disabled{cursor:default}
+.lever:focus-visible{outline:3px solid var(--hot);outline-offset:2px;border-radius:8px}
+.hub{position:absolute;left:0;top:calc(var(--pivot) - .17em);width:.52em;height:.34em;background:var(--box-lo);border-radius:0 .08em .08em 0}
+.arm{position:absolute;left:.34em;top:calc(var(--pivot) - 2em);width:.2em;height:2em;border-radius:.1em;
+  background:linear-gradient(90deg,var(--box-lo),var(--box-hi) 45%,var(--box-lo));
+  transform-origin:50% 100%;transform:scaleY(var(--c))}
+.knob{position:absolute;left:.13em;top:calc(var(--pivot) - .31em);width:.62em;height:.62em;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--box-shine),var(--box) 55%,var(--box-lo));
+  box-shadow:.04em .06em 0 var(--ink);
+  transform:translateY(calc(var(--c) * -2em)) scale(calc(1 + .3 * var(--s)))}
+.lever:not(:disabled) .knob::after{content:"";position:absolute;inset:-.12em;border-radius:50%;border:.04em solid var(--hot);animation:ping 1.3s ease-out infinite}
+@keyframes ping{from{transform:scale(.8);opacity:1}to{transform:scale(1.5);opacity:0}}
+
+.stamp{position:absolute;left:-.34em;bottom:-.42em;width:1.7em;height:1.7em;border-radius:50%;display:grid;place-items:center;
+  background:var(--paper);border:.09em solid currentColor;outline:.03em solid currentColor;outline-offset:-.17em;
+  font:400 .74em/1 var(--display);transform:rotate(-14deg);box-shadow:.05em .07em 0 var(--ink)}
+.stamp.danger{color:var(--hot)} .stamp.safe{color:var(--sea)} .stamp.jack{color:var(--sun-deep);font-size:.5em;width:2.5em;height:2.5em}
+
+.controls{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px}
+button{font-family:var(--body)}
+.pull{font:400 clamp(20px,5.4vw,26px)/1 var(--display);color:var(--paper);background:var(--hot);border:3px solid var(--ink);
+  border-radius:12px;padding:.7em 1.3em .75em;box-shadow:0 6px 0 var(--ink);cursor:pointer;transition:transform .08s,box-shadow .08s}
+.pull:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+.pull:disabled{background:var(--box);cursor:default}
+.sound{font-weight:900;font-size:14px;color:var(--ink);background:var(--paper);border:3px solid var(--ink);border-radius:12px;padding:.55em .9em;cursor:pointer}
+.pull:focus-visible,.sound:focus-visible{outline:3px solid var(--paper);outline-offset:3px}
+
+h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
+.card{background:var(--paper);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:18px 18px 20px}
+.verdict{margin:0;font:400 clamp(30px,8vw,46px)/1.15 var(--display)}
+.verdict.danger{color:var(--hot)} .verdict.safe{color:var(--sea)} .verdict.jack{color:var(--sun-deep)}
+.detail{margin:6px 0 16px;font-weight:700}
+.meter{position:relative;height:18px;border:3px solid var(--ink);background:linear-gradient(90deg,var(--sea),var(--sun) 50%,var(--hot))}
+.needle{position:absolute;top:-9px;bottom:-9px;left:0;width:6px;margin-left:-3px;background:var(--ink);border-radius:3px;
+  transition:left .7s cubic-bezier(.3,1.6,.5,1)}
+.cap{display:flex;justify-content:space-between;gap:8px;margin:10px 0 0;font-size:13px;font-weight:900}
+
+.stats{display:flex;flex-wrap:wrap;gap:0;margin:0 0 12px;border-block:3px solid var(--ink)}
+.stats div{flex:1 1 30%;padding:10px 12px 12px;min-width:0}
+.stats div+div{border-left:3px solid var(--ink)}
+.stats dt{font-size:13px;font-weight:900}
+.stats dd{margin:0;font:400 30px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.theory{margin:0;font-weight:700}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.log li{display:flex;align-items:center;gap:8px;background:var(--paper);border:2px solid var(--ink);padding:3px 10px 4px;font-weight:900}
+.log i{font-style:normal;font-size:12px;color:var(--paper);padding:0 6px;border-radius:3px}
+.log .danger{background:var(--hot)} .log .safe{background:var(--sea)} .log .jack{background:var(--sun-deep)}
+.empty{margin:0;font-weight:700}
+
+.credit p{margin:0 0 12px;max-width:36em}
+.credit dl{margin:0 0 14px;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.credit dt{font-weight:900} .credit dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.credit a{color:var(--ink);font-weight:900;text-decoration-thickness:2px;text-underline-offset:3px}
+blockquote{margin:0 0 14px;padding:4px 0 4px 16px;border-left:6px solid var(--hot)}
+blockquote p{margin:0 0 4px;font-weight:900;font-size:18px}
+blockquote cite{font-style:normal;font-size:13px;font-weight:700}
+.fine{font-size:13px;line-height:1.7}
+
+@media (prefers-reduced-motion:reduce){
+  .rays,.win.target,.lever .knob::after{animation:none}
+  .machine,.needle{transition:none}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="mb1" x="0" y="0" width="100%" height="100%"><feGaussianBlur stdDeviation="0 3"/></filter>
+  <filter id="mb2" x="0" y="0" width="100%" height="100%"><feGaussianBlur stdDeviation="0 9"/></filter>
+</svg>
+<div class="sky" aria-hidden="true"><div class="rays"></div></div>
+<div class="dim" aria-hidden="true"><div class="glow" id="glow"></div></div>
+<div class="flash" id="flash" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<main class="wrap" lang="ja">
+  <header>
+    <p class="eyebrow">非公式ブラウザ版 ／ 元ネタは DEEokinawa の工作記事</p>
+    <h1>ちんすこう<br><span class="tag">綴りの危うさ</span><br>可視化マシーン</h1>
+    <p class="lede">「ち」「ん」「す」「こ」「う」。この 5 文字、並びしだいでかなり危うい。レバーを倒して、その目で確かめよう。</p>
+  </header>
+
+  <section class="stage" aria-label="マシーン">
+    <p class="telop" id="telop" aria-live="polite">レバーを倒してスタート</p>
+    <noscript><p class="lede">このマシーンは JavaScript を有効にすると動きます。</p></noscript>
+    <div class="machine" id="machine">
+      <div class="box" id="box">
+        <div class="windows" id="windows"></div>
+        <div class="stamp" id="stamp" hidden></div>
+      </div>
+      <button class="lever" id="lever" type="button" aria-label="レバーを倒す">
+        <span class="hub"></span><span class="arm"></span><span class="knob"></span>
+      </button>
+    </div>
+    <div class="controls">
+      <button class="pull" id="pull" type="button">レバーを倒す</button>
+      <button class="sound" id="sound" type="button" aria-pressed="true">音 ON</button>
+    </div>
+  </section>
+
+  <section class="card" aria-live="polite">
+    <h2>判定</h2>
+    <p class="verdict" id="verdict">待機中</p>
+    <p class="detail" id="detail">いまは正しい綴りの「ちんすこう」。レバーを倒すと 5 つのリールがばらばらに回ります。</p>
+    <div class="meter" id="meter" role="img" aria-label="危うさ 0%"><div class="needle" id="needle"></div></div>
+    <p class="cap"><span>安全</span><span id="meterVal">危うさ 0%（当社比）</span><span>危うい</span></p>
+  </section>
+
+  <section>
+    <h2>これまでの記録</h2>
+    <dl class="stats">
+      <div><dt>回した回数</dt><dd id="stSpins">0</dd></div>
+      <div><dt>危うい綴り</dt><dd id="stDanger">0</dd></div>
+      <div><dt>出現率</dt><dd id="stRate">—</dd></div>
+    </dl>
+    <p class="theory">理論上は全 3,125 通りのうち <b id="thN">—</b> 通り（<b id="thP">—</b>%）が危うい綴り。正しい「ちんすこう」が揃うのは 1 通りだけです。</p>
+  </section>
+
+  <section>
+    <h2>最近の出目</h2>
+    <p class="empty" id="logEmpty">まだ回していません。</p>
+    <ol class="log" id="log"></ol>
+  </section>
+
+  <section class="card credit">
+    <h2>元ネタとクレジット</h2>
+    <p>このページは、沖縄のウェブメディア DEEokinawa の特集記事で作られた実物のマシーンを、ブラウザで遊べる形に再現した非公式のファン作品です。3D プリンタ製の箱、5 つの窓、横のレバーを倒すと文字が回る仕組みは、すべて元記事のアイデアと工作によるものです。</p>
+    <dl>
+      <dt>記事</dt><dd><a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener">ちんすこうの文字の綴りの危うさを可視化するマシーンを作る</a></dd>
+      <dt>著者</dt><dd>やんばるたろう さん</dd>
+      <dt>掲載</dt><dd>DEEokinawa（でぃーおきなわ）特集 2026.09.30</dd>
+    </dl>
+    <blockquote>
+      <p>想像よりもよいものができて打ち震えています。</p>
+      <cite>やんばるたろう さん（上記の DEEokinawa 記事より引用）</cite>
+    </blockquote>
+    <p>実物が動く様子は、元記事の動画でぜひ見てください。本物のほうがずっといい音がします。</p>
+    <p>元記事によると、ちんすこうは漢字で「金楚糕」。金は黄金色、楚はほろりとほどける口当たり、糕は焼き菓子を表すそうです。</p>
+    <p class="fine">リールが 1 つずつ止まる演出、リーチ、判定スタンプ、危うさメーター、効果音はこのブラウザ版で足したもので、実物のマシーンにはありません。出目は 5 つのリールそれぞれ 1/5 の乱数で、演出による操作はしていません。DEEokinawa 編集部が制作・監修したページではありません。</p>
+    <p class="fine">ブラウザ版の制作: sugiween</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const SEQ = ['ち', 'ん', 'す', 'こ', 'う'];
+  const N = SEQ.length;
+  const DANGER = [
+    { w: 'ちんちん', label: 'ち○ちん' },
+    { w: 'ちんこ', label: 'ち○こ' },
+    { w: 'うんち', label: 'うんち' },
+    { w: 'うんこ', label: 'うんこ' },
+  ];
+  const JACK = SEQ.join('');
+  const TARGETS = [...DANGER.map(d => d.w), JACK];
+  const SAFE_LINES = [
+    '意味はないのに、声に出すと妙に不安になる。',
+    '呪文としては強そう。',
+    '沖縄のどこかに、こういう地名がありそう。',
+    '平和な綴りです。胸を張って読み上げましょう。',
+  ];
+  const LEVER_MAX = 110;
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  const machine = $('machine'), box = $('box'), lever = $('lever'), pullBtn = $('pull'), soundBtn = $('sound');
+  const telop = $('telop'), stamp = $('stamp'), glow = $('glow'), flash = $('flash');
+
+  // ---- リール ----
+  const reels = SEQ.map((_, i) => {
+    const win = document.createElement('div');
+    win.className = 'win';
+    const strip = document.createElement('div');
+    strip.className = 'strip';
+    for (let j = 0; j < N * 3; j++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const s = document.createElement('span');
+      s.textContent = SEQ[j % N];
+      cell.appendChild(s);
+      strip.appendChild(cell);
+    }
+    win.appendChild(strip);
+    $('windows').appendChild(win);
+    const r = { win, el: strip, p: (N - i) % N, v: 0, vmax: 23 + i * 1.6, mode: 'idle', blur: 0 };
+    render(r);
+    return r;
+  });
+  function mod(a, n) { return ((a % n) + n) % n; }
+  // p が 1 進むと文字 1 個ぶん下へ流れる。整数 p のとき窓の中央に SEQ[(-p) mod N] が来る
+  function render(r) { r.el.style.transform = `translateY(${-(2 * N - mod(r.p, N))}em)`; }
+  function nextTarget(p0, minTravel, ci) {
+    let q = Math.ceil(p0 + minTravel);
+    while (mod(q, N) !== mod(N - ci, N)) q++;
+    return q;
+  }
+  function setBlur(r, v) {
+    const lvl = v > 13 ? 2 : v > 5 ? 1 : 0;
+    if (r.blur !== lvl) { r.blur = lvl; r.el.style.filter = lvl ? `url(#mb${lvl})` : ''; }
+  }
+  function planStop(r, ci) {
+    const p0 = r.p, v0 = Math.max(r.v, 12), pT = nextTarget(p0, 3, ci);
+    const D = 2 * (pT - p0) / v0, B = 0.16;
+    return { D, T: D + B, end: pT, at(t) {
+      if (t < D) return p0 + v0 * t - v0 * t * t / (2 * D);
+      const s = (t - D) / B; return pT + 0.14 * Math.sin(Math.PI * s) * (1 - s);
+    } };
+  }
+  // リーチ用: 急減速 → じりじり進む → 最後の 1 コマ強をゆっくり滑り込む
+  function planReach(r, ci) {
+    const p0 = r.p, v0 = Math.max(r.v, 12), vs = 2.6, T1 = 0.7, T3 = 1.4;
+    const d1 = (v0 + vs) / 2 * T1, d3 = vs * T3 / 2;
+    const pT = nextTarget(p0, d1 + d3 + vs * 1.0, ci);
+    const T2 = (pT - p0 - d1 - d3) / vs, D = T1 + T2 + T3, B = 0.2;
+    return { D, T: D + B, end: pT, at(t) {
+      if (t < T1) return p0 + v0 * t - (v0 - vs) * t * t / (2 * T1);
+      if (t < T1 + T2) return p0 + d1 + vs * (t - T1);
+      if (t < D) { const u = t - T1 - T2; return p0 + d1 + vs * T2 + vs * u - vs * u * u / (2 * T3); }
+      const s = (t - D) / B; return pT + 0.1 * Math.sin(Math.PI * s) * (1 - s);
+    } };
+  }
+  let looping = false, lastT = 0, lastTick = 0;
+  function loop(now) {
+    const dt = Math.max(0.004, Math.min(0.05, (now - lastT) / 1000));
+    lastT = now;
+    let active = false;
+    for (const r of reels) {
+      if (r.mode === 'idle') continue;
+      active = true;
+      const prev = r.p;
+      if (r.mode === 'spin') {
+        r.v = Math.min(r.vmax, r.v + 90 * dt);
+        r.p += r.v * dt;
+      } else {
+        const t = (now - r.t0) / 1000;
+        if (!r.landed && t >= r.plan.D) { r.landed = true; sfx.stop(); }
+        if (t >= r.plan.T) {
+          r.p = r.plan.end; r.v = 0; r.mode = 'idle';
+          setBlur(r, 0); render(r);
+          const done = r.done; r.done = null; done();
+          continue;
+        }
+        r.p = r.plan.at(t);
+        r.v = Math.abs(r.p - prev) / dt;
+      }
+      if (Math.round(r.p) !== Math.round(prev)) {
+        const slow = r.v < 6;
+        if (slow || now - lastTick > 55) { lastTick = now; sfx.tick(slow); }
+      }
+      setBlur(r, r.v); render(r);
+    }
+    if (active) requestAnimationFrame(loop); else looping = false;
+  }
+  function startLoop() { if (!looping) { looping = true; lastT = performance.now(); requestAnimationFrame(loop); } }
+  function stopReel(i, ci, reach) {
+    return new Promise(res => {
+      const r = reels[i];
+      r.plan = reach ? planReach(r, ci) : planStop(r, ci);
+      r.t0 = performance.now(); r.landed = false; r.done = res; r.mode = 'plan';
+    });
+  }
+
+  // ---- 音 ----
+  let soundOn = true, AC = null;
+  try { soundOn = localStorage.getItem('chinsukou-sound') !== 'off'; } catch (e) {}
+  function ac() {
+    if (!soundOn) return null;
+    if (!AC) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C(); }
+    if (AC.state === 'suspended') AC.resume();
+    return AC;
+  }
+  function tone(f, f2, type, d, g, when) {
+    const a = ac(); if (!a) return;
+    const t = a.currentTime + (when || 0), o = a.createOscillator(), v = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    v.gain.setValueAtTime(g, t); v.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(v); v.connect(a.destination); o.start(t); o.stop(t + d + 0.03);
+  }
+  function noise(d, g) {
+    const a = ac(); if (!a) return;
+    const n = Math.floor(a.sampleRate * d), buf = a.createBuffer(1, n, a.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = a.createBufferSource(), v = a.createGain(); s.buffer = buf; v.gain.value = g;
+    s.connect(v); v.connect(a.destination); s.start();
+  }
+  const sfx = {
+    lever() { noise(0.12, 0.28); tone(150, 60, 'triangle', 0.2, 0.35); },
+    tick(slow) { tone(slow ? 880 : 1500, null, 'square', 0.025, slow ? 0.09 : 0.03); },
+    stop() { tone(260, 110, 'triangle', 0.09, 0.32); noise(0.04, 0.14); },
+    beat() { tone(72, 40, 'sine', 0.16, 0.8); tone(62, 38, 'sine', 0.18, 0.55, 0.17); },
+    hit() { tone(220, 50, 'sawtooth', 0.45, 0.28); noise(0.22, 0.3); },
+    danger() { for (let i = 0; i < 6; i++) tone(i % 2 ? 660 : 880, null, 'sawtooth', 0.16, 0.15, i * 0.16); },
+    safe() { tone(520, 260, 'sine', 0.3, 0.22); },
+    jack() { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, null, 'square', 0.24, 0.13, i * 0.11)); },
+  };
+  function paintSound() { soundBtn.textContent = soundOn ? '音 ON' : '音 OFF'; soundBtn.setAttribute('aria-pressed', String(soundOn)); }
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn; paintSound();
+    try { localStorage.setItem('chinsukou-sound', soundOn ? 'on' : 'off'); } catch (e) {}
+    if (soundOn) sfx.tick(true);
+  });
+  paintSound();
+
+  // ---- 演出の小道具 ----
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function tween(ms, fn) {
+    return new Promise(res => {
+      const t0 = performance.now();
+      const step = now => { const t = Math.min(1, (now - t0) / ms); fn(t); if (t < 1) requestAnimationFrame(step); else res(); };
+      requestAnimationFrame(step);
+    });
+  }
+  function setLever(deg) {
+    const a = deg * Math.PI / 180;
+    lever.style.setProperty('--c', Math.cos(a).toFixed(4));
+    lever.style.setProperty('--s', Math.sin(Math.min(a, Math.PI / 2)).toFixed(4));
+  }
+  const backOut = t => 1 + 2.4 * Math.pow(t - 1, 3) + 1.4 * Math.pow(t - 1, 2);
+  let beatTimer = null;
+  function startBeat() {
+    let gap = 640;
+    const go = () => {
+      sfx.beat();
+      if (!calm) {
+        box.animate([{ transform: 'scale(1.05)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'ease-out' });
+        glow.animate([{ opacity: 1 }, { opacity: 0.35 }], { duration: 340 });
+      }
+      gap = Math.max(320, gap * 0.9);
+      beatTimer = setTimeout(go, gap);
+    };
+    go();
+  }
+  function stopBeat() { clearTimeout(beatTimer); beatTimer = null; }
+  const fx = $('fx'), g2 = fx.getContext('2d');
+  let parts = [], fxRun = false;
+  function burst(colors, n) {
+    if (calm) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    fx.width = innerWidth * dpr; fx.height = innerHeight * dpr; g2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const b = box.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    for (let i = 0; i < n; i++) parts.push({
+      x: cx, y: cy, vx: (Math.random() - 0.5) * 900, vy: -Math.random() * 900 - 150, s: 6 + Math.random() * 9,
+      c: colors[i % colors.length], r: Math.random() * 6, vr: (Math.random() - 0.5) * 12, life: 1.5 + Math.random() * 0.8,
+    });
+    if (fxRun) return;
+    fxRun = true;
+    let last = performance.now();
+    const step = now => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
+      g2.clearRect(0, 0, innerWidth, innerHeight);
+      parts = parts.filter(p => p.life > 0);
+      for (const p of parts) {
+        p.vy += 1500 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.vr * dt; p.life -= dt;
+        g2.save(); g2.translate(p.x, p.y); g2.rotate(p.r); g2.globalAlpha = Math.max(0, Math.min(1, p.life));
+        g2.fillStyle = p.c; g2.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * 0.66); g2.restore();
+      }
+      if (parts.length) requestAnimationFrame(step); else fxRun = false;
+    };
+    requestAnimationFrame(step);
+  }
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  // ---- 判定 ----
+  // i 番目のリールが止まる直前に、あと 1 文字で成立する語があれば、その「来てほしくない 1 文字」を返す
+  function reachNeeds(st, i) {
+    const needs = new Set();
+    for (const w of TARGETS) {
+      const o = i - (w.length - 1);
+      if (o >= 0 && w.slice(0, -1) === st.slice(o, i).join('')) needs.add(w[w.length - 1]);
+    }
+    return [...needs];
+  }
+  function markHits(word, upto) {
+    for (const w of TARGETS) {
+      if (w === JACK && word !== JACK) continue;
+      let from = 0, at;
+      while ((at = word.indexOf(w, from)) !== -1) {
+        if (at + w.length <= upto) for (let k = at; k < at + w.length; k++) reels[k].win.classList.add(w === JACK ? 'jack' : 'hit');
+        from = at + 1;
+      }
+    }
+  }
+  function canAnagram(word, w) {
+    const left = word.split('');
+    for (const ch of w) { const k = left.indexOf(ch); if (k < 0) return false; left.splice(k, 1); }
+    return true;
+  }
+  function judge(word) {
+    if (word === JACK) return { kind: 'jack', mark: '本物', title: '本物！', score: 0, detail: '正しい綴りの「ちんすこう」が完成。確率は 3,125 分の 1 です。' };
+    const found = DANGER.filter(d => word.includes(d.w));
+    if (found.length) return { kind: 'danger', mark: '危', title: '危うい！', score: 100,
+      detail: `「${found.map(d => d.label).join('」「')}」が出現。これが、ちんすこうの綴りの危うさです。` };
+    if (/ちん|うん|んこ|んち/.test(word)) return { kind: 'safe', mark: '安', title: 'ギリギリセーフ', score: 60, detail: 'あと 1 文字で危うかった。油断は禁物です。' };
+    if (DANGER.some(d => canAnagram(word, d.w))) return { kind: 'safe', mark: '安', title: 'セーフ', score: 35, detail: 'ただし、並び替えると危うい文字がそろっています。' };
+    return { kind: 'safe', mark: '安', title: 'セーフ', score: 8, detail: SAFE_LINES[Math.floor(Math.random() * SAFE_LINES.length)] };
+  }
+
+  // ---- 記録 ----
+  let stats = { spins: 0, danger: 0 };
+  try { const s = JSON.parse(localStorage.getItem('chinsukou-stats') || 'null'); if (s && s.spins >= 0) stats = { spins: s.spins | 0, danger: s.danger | 0 }; } catch (e) {}
+  function paintStats() {
+    $('stSpins').textContent = stats.spins.toLocaleString();
+    $('stDanger').textContent = stats.danger.toLocaleString();
+    $('stRate').textContent = stats.spins ? (stats.danger / stats.spins * 100).toFixed(1) + '%' : '—';
+  }
+  paintStats();
+  (function theory() {
+    let n = 0;
+    for (let x = 0; x < Math.pow(N, N); x++) {
+      let s = '', y = x;
+      for (let k = 0; k < N; k++) { s += SEQ[y % N]; y = Math.floor(y / N); }
+      if (DANGER.some(d => s.includes(d.w))) n++;
+    }
+    $('thN').textContent = n.toLocaleString();
+    $('thP').textContent = (n / Math.pow(N, N) * 100).toFixed(1);
+  })();
+  function addLog(word, v) {
+    $('logEmpty').hidden = true;
+    const li = document.createElement('li'), w = document.createElement('span'), m = document.createElement('i');
+    w.textContent = word; m.textContent = v.mark; m.className = v.kind;
+    li.append(w, m);
+    const log = $('log');
+    log.prepend(li);
+    while (log.children.length > 8) log.lastChild.remove();
+  }
+
+  // ---- 1 回ぶんの流れ ----
+  let busy = false;
+  function say(text, gold) { telop.textContent = text; telop.classList.toggle('gold', !!gold); }
+  async function pull() {
+    if (busy) return;
+    busy = true;
+    lever.disabled = pullBtn.disabled = true;
+    pullBtn.textContent = '回転中…';
+    try {
+      await spin();
+    } catch (e) {
+      // 途中で失敗しても操作不能にしない: リールを止めてレバーを戻す
+      console.error(e);
+      reels.forEach(r => { r.mode = 'idle'; r.done = null; r.v = 0; r.p = Math.round(r.p); setBlur(r, 0); render(r); r.win.classList.remove('target'); });
+      setLever(0);
+      say('もう一度レバーを倒してください');
+    } finally {
+      stopBeat();
+      document.body.classList.remove('reach');
+      machine.classList.remove('jolt');
+      pullBtn.textContent = 'もう一回倒す';
+      lever.disabled = pullBtn.disabled = false;
+      busy = false;
+    }
+  }
+  async function spin() {
+    stamp.hidden = true;
+    reels.forEach(r => r.win.classList.remove('hit', 'jack', 'target'));
+    const result = reels.map(() => Math.floor(Math.random() * N));
+
+    // レバーを手前に倒す → 倒している間に全リールが回る → レバーが戻る (実物と同じ順)
+    say('シャッフル中…');
+    sfx.lever();
+    machine.classList.add('jolt');
+    reels.forEach(r => { r.mode = 'spin'; });
+    startLoop();
+    await tween(240, t => setLever(LEVER_MAX * t * t));
+    await sleep(520);
+    machine.classList.remove('jolt');
+    await tween(320, t => setLever(LEVER_MAX * (1 - backOut(t))));
+    setLever(0);
+    say('どうなる…？');
+
+    // 左から 1 つずつ止める。あと 1 文字で危うい語が成立するときだけリーチ演出
+    const st = [];
+    for (let i = 0; i < N; i++) {
+      const ch = SEQ[result[i]];
+      const needs = reachNeeds(st, i);
+      if (needs.length) {
+        const forJack = st.join('') + needs[0] === JACK;
+        document.body.classList.add('reach');
+        reels[i].win.classList.add('target');
+        say(forJack ? `「う」が来たら、ちんすこう完成…！` : `リーチ！「${needs.join('」か「')}」が来たら…`, forJack);
+        startBeat();
+        await sleep(700);
+        await stopReel(i, result[i], true);
+        stopBeat();
+        st.push(ch);
+        reels[i].win.classList.remove('target');
+        document.body.classList.remove('reach');
+        if (needs.includes(ch)) {
+          markHits(st.join(''), st.length);
+          if (!calm) flash.animate([{ opacity: 0.85 }, { opacity: 0 }], { duration: 300 });
+          sfx.hit();
+          say(forJack ? 'そろった！！' : '来てしまった！');
+          await sleep(750);
+        } else {
+          sfx.safe();
+          say(forJack ? '惜しい…！' : 'セーフ…');
+          await sleep(550);
+        }
+      } else {
+        await sleep(200 + i * 60);
+        await stopReel(i, result[i], false);
+        st.push(ch);
+      }
+    }
+
+    // 判定
+    const word = st.join(''), v = judge(word);
+    markHits(word, N);
+    stamp.textContent = v.mark; stamp.className = 'stamp ' + v.kind; stamp.hidden = false;
+    if (!calm) stamp.animate([{ transform: 'rotate(-14deg) scale(3.2)', opacity: 0 }, { transform: 'rotate(-14deg) scale(1)', opacity: 1 }],
+      { duration: 260, easing: 'cubic-bezier(.2,1.4,.4,1)' });
+    if (v.kind === 'danger') {
+      sfx.danger();
+      if (!calm) machine.animate([{ transform: 'none' }, { transform: 'translate(-.08em,.03em) rotate(-1.6deg)' }, { transform: 'translate(.08em,-.03em) rotate(1.6deg)' },
+        { transform: 'translate(-.06em,0) rotate(-1deg)' }, { transform: 'translate(.05em,.02em) rotate(.8deg)' }, { transform: 'none' }], { duration: 520 });
+      burst([css('--hot'), css('--ink'), css('--paper')], 70);
+    } else if (v.kind === 'jack') {
+      sfx.jack();
+      burst([css('--gold'), css('--paper'), css('--hot'), css('--sea')], 160);
+    } else {
+      sfx.safe();
+    }
+    say(v.kind === 'danger' ? '危うい！！' : v.kind === 'jack' ? 'ちんすこう完成！' : `「${word}」`);
+    $('verdict').textContent = v.title; $('verdict').className = 'verdict ' + v.kind;
+    $('detail').textContent = `出目は「${word}」。${v.detail}`;
+    $('needle').style.left = v.score + '%';
+    $('meter').setAttribute('aria-label', `危うさ ${v.score}%`);
+    $('meterVal').textContent = `危うさ ${v.score}%（当社比）`;
+    stats.spins++; if (v.kind === 'danger') stats.danger++;
+    try { localStorage.setItem('chinsukou-stats', JSON.stringify(stats)); } catch (e) {}
+    paintStats(); addLog(word, v);
+  }
+  lever.addEventListener('click', pull);
+  pullBtn.addEventListener('click', pull);
+})();
+</script>
+</body>
+</html>
