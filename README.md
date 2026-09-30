@@ -11,6 +11,7 @@
 - 記事: [ちんすこうの文字の綴りの危うさを可視化するマシーンを作る](https://www.dee-okinawa.com/topics/2026/09/chinsukou.html)
 - 著者: やんばるたろう さん
 - 掲載: DEEokinawa（でぃーおきなわ）特集 2026.09.30
+- X: [DEEokinawa の投稿](https://x.com/dee_okinawa/status/2105158969350090949)
 
 DEEokinawa 編集部が制作・監修したものではありません。
 

@@ -42,6 +42,7 @@ body{margin:0;background:var(--sun);color:var(--ink);font:500 16px/1.75 var(--bo
 .col>*{position:relative;z-index:1;min-width:0}
 
 .eyebrow{margin:0 0 2px;font-weight:900;font-size:11px;letter-spacing:.03em}
+.eyebrow a{color:var(--ink);text-decoration-thickness:2px;text-underline-offset:2px}
 h1{margin:0;font:400 clamp(24px,7.4vw,40px)/1.2 var(--display)}
 .nb{display:inline-block}
 h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.02em .2em .08em;margin:.06em .04em;
@@ -56,7 +57,7 @@ h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.0
 .machine{--pivot:2.5em;--arm:2em;font-size:clamp(30px,min(11.2vw,9.5vh),84px);position:relative;padding:1em .95em 0 0;
   transition:transform .14s ease-out;line-height:1}
 .machine.jolt{transform:rotate(1.1deg) translateY(.04em)}
-.box{position:relative;padding:1em .42em;border-radius:.09em;
+.box{position:relative;padding:1.5em .42em;border-radius:.09em;
   background:
     repeating-linear-gradient(0deg,rgba(255,255,255,.055) 0 1px,rgba(255,255,255,0) 1px 3px),
     radial-gradient(rgba(255,255,255,.08) 1px,rgba(255,255,255,0) 1.5px) 0 0/7px 7px,
@@ -89,7 +90,7 @@ h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.0
 .lever:not(:disabled) .knob::after{content:"";position:absolute;inset:-.12em;border-radius:50%;border:.04em solid var(--hot);animation:ping 1.3s ease-out infinite}
 @keyframes ping{from{transform:scale(.8);opacity:1}to{transform:scale(1.5);opacity:0}}
 
-.stamp{position:absolute;left:-.34em;bottom:-.18em;width:1.7em;height:1.7em;border-radius:50%;display:grid;place-items:center;
+.stamp{position:absolute;left:-.5em;bottom:-.3em;width:1.5em;height:1.5em;border-radius:50%;display:grid;place-items:center;
   background:var(--paper);border:.09em solid currentColor;outline:.03em solid currentColor;outline-offset:-.17em;
   font:400 .74em/1 var(--display);transform:rotate(-14deg);box-shadow:.05em .07em 0 var(--ink)}
 .stamp.danger{color:var(--hot)} .stamp.safe{color:var(--sea)} .stamp.jack{color:var(--sun-deep);font-size:.5em;width:2.5em;height:2.5em}
@@ -138,9 +139,6 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
 @media (max-width:959px){
   .wrap{gap:10px}
   .col-info{gap:8px}
-  .lede{font-size:11px;margin-top:2px}
-  .machine{--pivot:2.1em;--arm:1.75em}
-  .box{padding-block:.6em}
   .col>.stage{gap:8px}
   .pull{font-size:18px;padding:.55em 1.1em .6em;box-shadow:0 4px 0 var(--ink)}
   .sound{font-size:12px;padding:.45em .8em}
@@ -157,9 +155,11 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   .log-sec .sec-h{flex:none}
   .log-sec .log,.log-sec .empty{flex:1;min-width:0}
   .stats{margin:0}
-  .stats div{padding:3px 10px 5px}
+  .stats{border-block-width:2px}
+  .stats div{display:flex;align-items:baseline;gap:6px;padding:2px 8px 3px}
+  .stats div+div{border-left-width:2px}
   .stats dt{font-size:11px}
-  .stats dd{font-size:20px}
+  .stats dd{font-size:16px}
   .log{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px}
   .log li{flex:none;font-size:12px;padding:1px 8px 2px}
   .empty{font-size:12px}
@@ -195,9 +195,8 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
 <main class="wrap" lang="ja">
   <div class="col col-play">
   <header>
-    <p class="eyebrow">非公式ブラウザ版 ／ 元ネタは DEEokinawa の工作記事</p>
+    <p class="eyebrow">非公式ブラウザ版 ／ 元ネタ: <a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener">dee-okinawa.com の工作記事</a></p>
     <h1><span class="nb">ちんすこう<span class="tag">綴りの危うさ</span></span><span class="nb">可視化マシーン</span></h1>
-    <p class="lede">「ち」「ん」「す」「こ」「う」。この 5 文字、並びしだいでかなり危うい。レバーを倒して、その目で確かめよう。</p>
   </header>
 
   <section class="stage" aria-label="マシーン">
@@ -252,6 +251,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
       <dt>記事</dt><dd><a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener">ちんすこうの文字の綴りの危うさを可視化するマシーンを作る</a></dd>
       <dt>著者</dt><dd>やんばるたろう さん</dd>
       <dt>掲載</dt><dd>DEEokinawa（でぃーおきなわ）特集 2026.09.30</dd>
+      <dt>X</dt><dd><a href="https://x.com/dee_okinawa/status/2105158969350090949" target="_blank" rel="noopener">DEEokinawa の X 投稿を見る</a></dd>
     </dl>
     <blockquote>
       <p>想像よりもよいものができて打ち震えています。</p>
