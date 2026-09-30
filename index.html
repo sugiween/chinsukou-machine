@@ -51,7 +51,7 @@ header{transition:color .3s}
 h1{margin:0;font:400 clamp(17px,4.7vw,32px)/1.16 var(--display);text-wrap:balance}
 h1 .tag{display:inline-block;background:var(--hot);color:var(--paper);padding:.02em .2em .08em;margin:.06em .04em;
   transform:rotate(-2.5deg);box-shadow:.07em .07em 0 var(--ink)}
-.lede{margin:0;font-weight:700;max-width:34em;text-align:center}
+.lede{margin:4px 0 0;font-weight:700;font-size:14px;line-height:1.6;max-width:40em}
 
 .col>.stage{z-index:3;display:flex;flex-direction:column;align-items:center;gap:10px}
 .telop{position:absolute;left:0;top:0;width:18.44em;height:2.78em;margin:0;padding-bottom:.45em;display:grid;place-items:end center;text-align:center;
@@ -60,7 +60,7 @@ body.reach .telop{color:var(--paper)}
 body.reach .telop.gold{color:var(--gold)}
 
 /* マシーン: 1em = 窓 1 つ分 */
-.machine{--pivot:2.5em;font-size:clamp(30px,min(11.2vw,9.5vh),84px);position:relative;padding:1em .95em 0 0;
+.machine{--pivot:2.5em;--arm:2em;font-size:clamp(30px,min(11.2vw,9.5vh),84px);position:relative;padding:1em .95em 0 0;
   transition:transform .14s ease-out;line-height:1}
 .machine.jolt{transform:rotate(1.1deg) translateY(.04em)}
 body.reach .machine{transform:scale(1.06);transition-duration:.4s}
@@ -89,13 +89,13 @@ body.reach .machine{transform:scale(1.06);transition-duration:.4s}
 .lever:disabled{cursor:default}
 .lever:focus-visible{outline:3px solid var(--hot);outline-offset:2px;border-radius:8px}
 .hub{position:absolute;left:0;top:calc(var(--pivot) - .17em);width:.52em;height:.34em;background:var(--box-lo);border-radius:0 .08em .08em 0}
-.arm{position:absolute;left:.34em;top:calc(var(--pivot) - 2em);width:.2em;height:2em;border-radius:.1em;
+.arm{position:absolute;left:.34em;top:calc(var(--pivot) - var(--arm));width:.2em;height:var(--arm);border-radius:.1em;
   background:linear-gradient(90deg,var(--box-lo),var(--box-hi) 45%,var(--box-lo));
   transform-origin:50% 100%;transform:scaleY(var(--c))}
 .knob{position:absolute;left:.13em;top:calc(var(--pivot) - .31em);width:.62em;height:.62em;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,var(--box-shine),var(--box) 55%,var(--box-lo));
   box-shadow:.04em .06em 0 var(--ink);
-  transform:translateY(calc(var(--c) * -2em)) scale(calc(1 + .3 * var(--s)))}
+  transform:translateY(calc(var(--c) * -1 * var(--arm))) scale(calc(1 + .3 * var(--s)))}
 .lever:not(:disabled) .knob::after{content:"";position:absolute;inset:-.12em;border-radius:50%;border:.04em solid var(--hot);animation:ping 1.3s ease-out infinite}
 @keyframes ping{from{transform:scale(.8);opacity:1}to{transform:scale(1.5);opacity:0}}
 
@@ -146,11 +146,30 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
 
 /* スマホ幅: 判定の枠をボタンの直下に上げて小さくし、説明文はその下へ */
 @media (max-width:959px){
-  .col-info>.verdict-card{order:-1;padding:10px 14px 14px}
-  .verdict-card h2{font-size:14px;margin:0}
-  .verdict{font-size:clamp(22px,6.4vw,34px)}
-  .detail{margin:2px 0 10px;font-size:14px;line-height:1.55}
-  .cap{margin-top:8px;font-size:12px}
+  .wrap{gap:10px}
+  .col-info{gap:8px}
+  .lede{font-size:12px;line-height:1.5;margin-top:2px}
+  .machine{--pivot:2.2em;--arm:1.8em}
+  .box{padding-block:.7em}
+  .col>.stage{gap:8px}
+  .pull{font-size:18px;padding:.55em 1.1em .6em;box-shadow:0 4px 0 var(--ink)}
+  .sound{font-size:12px;padding:.45em .8em}
+  .verdict-card{padding:6px 12px 10px;box-shadow:4px 4px 0 var(--ink)}
+  .verdict-card h2{display:inline;font-size:12px;margin:0 8px 0 0}
+  .verdict{display:inline;font-size:clamp(20px,5.8vw,30px)}
+  .detail{margin:2px 0 8px;font-size:13px;line-height:1.5}
+  .meter{height:14px}
+  .needle{top:-6px;bottom:-6px}
+  .cap{margin-top:6px;font-size:11px}
+  .sec-h{font-size:13px;margin:0 0 2px}
+  .stats{margin:0}
+  .stats div{padding:3px 10px 5px}
+  .stats dt{font-size:11px}
+  .stats dd{font-size:20px}
+  .log{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px}
+  .log li{flex:none;font-size:12px;padding:1px 8px 2px}
+  .empty{font-size:12px}
+  .theory{font-size:13px}
 }
 
 /* PC 幅: 左にマシーン (追従)、右に説明と記録 */
@@ -158,7 +177,6 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   .wrap{max-width:1180px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:start}
   .machine{font-size:clamp(30px,min(5.6vw,9.5vh),72px)}
   h1{font-size:clamp(22px,2.4vw,32px)}
-  .lede{text-align:left}
   body.reach .col-play header{color:var(--paper)}
 }
 
@@ -188,6 +206,7 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   <header>
     <p class="eyebrow">非公式ブラウザ版 ／ 元ネタは DEEokinawa の工作記事</p>
     <h1>ちんすこう<span class="tag">綴りの危うさ</span>可視化マシーン</h1>
+    <p class="lede">「ち」「ん」「す」「こ」「う」。この 5 文字、並びしだいでかなり危うい。レバーを倒して、その目で確かめよう。</p>
   </header>
 
   <section class="stage" aria-label="マシーン">
@@ -210,7 +229,6 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
 
   </div>
   <div class="col col-info">
-  <p class="lede">「ち」「ん」「す」「こ」「う」。この 5 文字、並びしだいでかなり危うい。レバーを倒して、その目で確かめよう。</p>
   <section class="card verdict-card" aria-live="polite">
     <h2>判定</h2>
     <p class="verdict" id="verdict">待機中</p>
@@ -220,20 +238,21 @@ blockquote cite{font-style:normal;font-size:13px;font-weight:700}
   </section>
 
   <section>
-    <h2>これまでの記録</h2>
+    <h2 class="sec-h">これまでの記録</h2>
     <dl class="stats">
       <div><dt>回した回数</dt><dd id="stSpins">0</dd></div>
       <div><dt>危うい綴り</dt><dd id="stDanger">0</dd></div>
       <div><dt>出現率</dt><dd id="stRate">—</dd></div>
     </dl>
-    <p class="theory">理論上は全 3,125 通りのうち <b id="thN">—</b> 通り（<b id="thP">—</b>%）が危うい綴り。正しい「ちんすこう」が揃うのは 1 通りだけです。</p>
   </section>
 
   <section>
-    <h2>最近の出目</h2>
+    <h2 class="sec-h">最近の出目</h2>
     <p class="empty" id="logEmpty">まだ回していません。</p>
     <ol class="log" id="log"></ol>
   </section>
+
+  <p class="theory">理論上は全 3,125 通りのうち <b id="thN">—</b> 通り（<b id="thP">—</b>%）が危うい綴り。正しい「ちんすこう」が揃うのは 1 通りだけです。</p>
 
   <section class="card credit">
     <h2>元ネタとクレジット</h2>
