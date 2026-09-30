@@ -42,7 +42,8 @@ body{margin:0;background:var(--sun);color:var(--ink);font:500 16px/1.75 var(--bo
 .col>*{position:relative;z-index:1;min-width:0}
 
 .eyebrow{margin:0 0 2px;font-weight:900;font-size:11px;letter-spacing:.03em}
-.eyebrow a{color:var(--link);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:2px}
+.eyebrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.eyebrow a{color:var(--link);text-decoration:underline;text-underline-offset:2px;background:var(--paper);border:2px solid var(--ink);border-radius:999px;padding:0 10px 1px}
 a[target="_blank"]::after{content:"↗";display:inline-block;margin-left:.15em;font:900 .9em/1 "Segoe UI Symbol","Apple Symbols","Noto Sans Symbols 2",system-ui,sans-serif;text-decoration:none}
 h1{margin:0;font:400 clamp(24px,7.4vw,40px)/1.2 var(--display)}
 .nb{display:inline-block}
@@ -121,6 +122,8 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
 .stats dt{font-size:13px;font-weight:900}
 .stats dd{margin:0;font:400 30px/1.1 var(--display);font-variant-numeric:tabular-nums}
 .theory{margin:0;font-weight:700}
+.global{margin:0;font-weight:700}
+.global b{font:400 1.15em/1 var(--display);font-variant-numeric:tabular-nums}
 .log{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .log li{display:flex;align-items:center;gap:8px;background:var(--paper);border:2px solid var(--ink);padding:3px 10px 4px;font-weight:900}
 .log i{font-style:normal;font-size:12px;color:var(--paper);padding:0 6px;border-radius:3px}
@@ -164,7 +167,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
   .log{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px}
   .log li{flex:none;font-size:12px;padding:1px 8px 2px}
   .empty{font-size:12px}
-  .theory{font-size:13px}
+  .theory,.global{font-size:13px}
 }
 
 /* PC 幅: 左にマシーン (追従)、右に説明と記録 */
@@ -196,7 +199,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
 <main class="wrap" lang="ja">
   <div class="col col-play">
   <header>
-    <p class="eyebrow">非公式ブラウザ版 ／ 元ネタ: <a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener">dee-okinawa.com の工作記事</a></p>
+    <p class="eyebrow"><span>非公式ブラウザ版</span><a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener" data-count="article-clicks">元記事を読む（dee-okinawa.com）</a></p>
     <h1><span class="nb">ちんすこう<span class="tag">綴りの危うさ</span></span><span class="nb">可視化マシーン</span></h1>
   </header>
 
@@ -243,13 +246,14 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
     <ol class="log" id="log"></ol>
   </section>
 
+  <p class="global" id="global" hidden>みんなで回した回数 <b id="gSpins">—</b> ／ 元記事へ送った回数 <b id="gClicks">—</b></p>
   <p class="theory">理論上は全 3,125 通りのうち <b id="thN">—</b> 通り（<b id="thP">—</b>%）が危うい綴り。正しい「ちんすこう」が揃うのは 1 通りだけです。</p>
 
   <section class="card credit">
     <h2>元ネタとクレジット</h2>
     <p>このページは、沖縄のウェブメディア DEEokinawa の特集記事で作られた実物のマシーンを、ブラウザで遊べる形に再現した非公式のファン作品です。3D プリンタ製の箱、5 つの窓、横のレバーを倒すと文字が回る仕組みは、すべて元記事のアイデアと工作によるものです。</p>
     <dl>
-      <dt>記事</dt><dd><a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener">ちんすこうの文字の綴りの危うさを可視化するマシーンを作る</a></dd>
+      <dt>記事</dt><dd><a href="https://www.dee-okinawa.com/topics/2026/09/chinsukou.html" target="_blank" rel="noopener" data-count="article-clicks">ちんすこうの文字の綴りの危うさを可視化するマシーンを作る</a></dd>
       <dt>著者</dt><dd>やんばるたろう さん</dd>
       <dt>掲載</dt><dd>DEEokinawa（でぃーおきなわ）特集 2026.09.30</dd>
     </dl>
@@ -258,9 +262,10 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
         <a href="https://twitter.com/dee_okinawa/status/2105158969350090949" target="_blank" rel="noopener">DEEokinawa の X 投稿を見る</a>
       </blockquote>
     </div>
-    <p>実物が動く様子は、元記事の動画でぜひ見てください。本物のほうがずっといい音がします。</p>
+    <p>実物が動く様子は、元記事の動画でぜひ見てください。本物のほうがずっといい音がします。記事が面白かったら、元記事の「投げ銭する」から編集部を応援できます。</p>
     <p>元記事によると、ちんすこうは漢字で「金楚糕」。金は黄金色、楚はほろりとほどける口当たり、糕は焼き菓子を表すそうです。</p>
     <p class="fine">判定スタンプ、危うさメーター、記録、効果音はこのブラウザ版で足したもので、実物のマシーンにはありません。出目は 5 つのリールそれぞれ 1/5 の乱数で、演出による操作はしていません。DEEokinawa 編集部が制作・監修したページではありません。</p>
+    <p class="fine">「みんなで回した回数」と「元記事へ送った回数」を数えるため、回したとき・元記事へのリンクを押したときに、外部のカウンター（Abacus）へ「1 足す」だけの通信を送ります。名前や出目などは送りません。</p>
     <p class="fine">ブラウザ版の制作: sugiween ／ ソースコード: <a href="https://github.com/sugiween/chinsukou-machine" target="_blank" rel="noopener">GitHub</a>（コード部分は MIT ライセンス）</p>
   </section>
   </div>
@@ -585,9 +590,34 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
     stats.spins++; if (v.kind === 'danger') stats.danger++;
     try { localStorage.setItem('chinsukou-stats', JSON.stringify(stats)); } catch (e) {}
     paintStats(); addLog(word, v);
+    counter('hit', 'spins');
   }
   lever.addEventListener('click', pull);
   pullBtn.addEventListener('click', pull);
+
+  // ---- みんなの合計 ----
+  // 公開ページでだけ数える (手元の確認やコピー先では通信しない)。フォークしたら host と ns を自分のものに変える
+  const COUNTER = { host: 'sugiween.github.io', api: 'https://abacus.jasoncameron.dev', ns: 'sugiween-chinsukou' };
+  const countOn = typeof location !== 'undefined' && location.hostname === COUNTER.host && typeof fetch === 'function';
+  const totals = { spins: null, 'article-clicks': null };
+  function paintTotals() {
+    if (totals.spins === null || totals['article-clicks'] === null) return;
+    $('gSpins').textContent = totals.spins.toLocaleString();
+    $('gClicks').textContent = totals['article-clicks'].toLocaleString();
+    $('global').hidden = false;
+  }
+  // op: get = 読むだけ / hit = 1 足す。まだ一度も足されていない名前を読むと 404 なので 0 として扱う。
+  // 読み込みが遅れて届いても数字が戻らないよう、大きいほうを残す。失敗時は表示しないだけ
+  function counter(op, key) {
+    if (!countOn) return;
+    fetch(`${COUNTER.api}/${op}/${COUNTER.ns}/${key}`, { keepalive: true })
+      .then(r => op === 'get' && r.status === 404 ? { value: 0 } : r.ok ? r.json() : null)
+      .then(j => { if (j && typeof j.value === 'number') { totals[key] = Math.max(totals[key] || 0, j.value); paintTotals(); } })
+      .catch(() => {});
+  }
+  counter('get', 'spins');
+  counter('get', 'article-clicks');
+  document.querySelectorAll('a[data-count]').forEach(a => a.addEventListener('click', () => counter('hit', a.dataset.count)));
 })();
 </script>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
