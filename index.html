@@ -348,7 +348,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
       const s = (t - D) / B; return pT + 0.14 * Math.sin(Math.PI * s) * (1 - s);
     } };
   }
-  let looping = false, lastT = 0, lastTick = 0;
+  let looping = false, lastT = 0;
   function loop(now) {
     const dt = Math.max(0.004, Math.min(0.05, (now - lastT) / 1000));
     lastT = now;
@@ -372,12 +372,36 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
         r.p = r.plan.at(t);
         r.v = Math.abs(r.p - prev) / dt;
       }
-      if (Math.round(r.p) !== Math.round(prev)) {
-        if (now - lastTick > 30) { lastTick = now; sfx.tick(); }
-      }
       setBlur(r, r.v); render(r);
     }
-    if (active) requestAnimationFrame(loop); else looping = false;
+    if (active) { scheduleTicks(now); requestAnimationFrame(loop); } else looping = false;
+  }
+  // 回転音の予約。画面の描き直し回数 (端末で 20〜60 回/秒と幅がある) に音の密度が左右されないよう、
+  // 音の時計で LOOK 秒先までのコマ境界を計算して予約しておく
+  let schedUntil = 0, lastTickAt = 0;
+  function posAt(r, dt) {
+    if (r.mode === 'spin') return r.p + r.v * dt;
+    const t = Math.min(r.plan.T, (performance.now() - r.t0) / 1000 + dt);
+    return r.plan.at(t);
+  }
+  function scheduleTicks() {
+    const a = soundOn ? ac() : null; if (!a) return;
+    const LOOK = 0.15, STEP = 0.004, GAP = 0.028;
+    const t0 = a.currentTime, from = Math.max(schedUntil, t0), to = t0 + LOOK;
+    if (from >= to) return;
+    const events = [];
+    for (const r of reels) {
+      if (r.mode === 'idle') continue;
+      let prevP = posAt(r, from - t0);
+      for (let t = from + STEP; t <= to; t += STEP) {
+        const p = posAt(r, t - t0);
+        if (Math.round(p) !== Math.round(prevP)) events.push(t);
+        prevP = p;
+      }
+    }
+    events.sort((x, y) => x - y);
+    for (const t of events) { if (t - lastTickAt >= GAP) { sfx.tick(t - t0); lastTickAt = t; } }
+    schedUntil = to;
   }
   function startLoop() { if (!looping) { looping = true; lastT = performance.now(); requestAnimationFrame(loop); } }
   function stopReel(i, ci) {
@@ -408,7 +432,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
   // 短い帯域ノイズ 1 発 = プラスチックの歯車が 1 コマ送られる音
   // 止まる音とレバーの音には低い「ポッ」を足す。止まる音が続けて重なるときは低い音を 1 回だけにする (同じ音が数ミリ秒ずれて重なると二重に聞こえる)
   let noiseBuf = null, tickN = 0, lastThud = 0;
-  function clack(g, f, d) {
+  function clack(g, f, d, when) {
     const a = ac(); if (!a) return;
     if (!noiseBuf) {
       const n = Math.floor(a.sampleRate * 0.1); noiseBuf = a.createBuffer(1, n, a.sampleRate);
@@ -416,7 +440,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
       const ch = noiseBuf.getChannelData(0); let x = 20260930;
       for (let i = 0; i < n; i++) { x = (x * 1664525 + 1013904223) >>> 0; ch[i] = x / 2147483648 - 1; }
     }
-    const t = a.currentTime, src = a.createBufferSource(), bp = a.createBiquadFilter(), v = a.createGain();
+    const t = a.currentTime + (when || 0), src = a.createBufferSource(), bp = a.createBiquadFilter(), v = a.createGain();
     src.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 1.4;
     v.gain.setValueAtTime(g, t); v.gain.exponentialRampToValueAtTime(0.0001, t + d);
     src.connect(bp); bp.connect(v); v.connect(a.destination); src.start(t); src.stop(t + d + 0.01);
@@ -424,7 +448,7 @@ h2{margin:0 0 10px;font:400 20px/1.3 var(--display)}
   const sfx = {
     lever() { clack(0.55, 850, 0.08); tone(150, 70, 'triangle', 0.12, 0.3); },
     leverBack() { clack(0.35, 1200, 0.05); },
-    tick() { tickN ^= 1; clack(0.22, tickN ? 3300 : 2500, 0.018); },
+    tick(when) { tickN ^= 1; clack(0.22, tickN ? 3300 : 2500, 0.018, when); },
     stop() {
       clack(0.55, 1400, 0.04);
       const now = performance.now();
